@@ -1,0 +1,3 @@
+[submodule "semantic-kitti-api"]
+	path = semantic-kitti-api
+	url = https://github.com/PRBonn/semantic-kitti-api.git
