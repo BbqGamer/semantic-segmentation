@@ -51,8 +51,8 @@ if __name__ == "__main__":
     ckpt_dir.mkdir(exist_ok=True)
     best_acc = 0.0
 
-    ds_train = SemanticKITTI(args.dataset, "train", kitty_conf)
-    ds_val = SemanticKITTI(args.dataset, "val", kitty_conf)
+    ds_train = SemanticKITTI(args.dataset, kitty_conf, "train")
+    ds_val = SemanticKITTI(args.dataset, kitty_conf, "valid")
     dl_train = torch.utils.data.DataLoader(
         ds_train,
         batch_size=cfg["batch_size"],

@@ -5,7 +5,7 @@ import torch
 
 
 class SemanticKITTI(torch.utils.data.Dataset):
-    def __init__(self, root, split="train", kitty_config):
+    def __init__(self, root, kitty_config, split="train"):
         self.files = []
         self.config = kitty_config
         root = Path(root)
