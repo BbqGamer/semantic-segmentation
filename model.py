@@ -39,7 +39,7 @@ class TNet(nn.Module):
 
 
 class PointNetSeg(nn.Module):
-    def __init__(self, num_classes=10):
+    def __init__(self, num_classes=20):
         super().__init__()
         self.input_tnet = TNet(3)
         self.mlp1 = nn.Sequential(

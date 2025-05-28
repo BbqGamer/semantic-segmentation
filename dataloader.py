@@ -3,56 +3,20 @@ from pathlib import Path
 import numpy as np
 import torch
 
-TRAIN = ["00", "01", "02", "03", "04", "05", "06", "07", "10"]
-VAL = ["08"]
-
-learning_map = {
-    0: 0,
-    1: 0,
-    10: 1,
-    11: 2,
-    13: 5,
-    15: 3,
-    16: 5,
-    18: 4,
-    20: 5,
-    30: 6,
-    31: 7,
-    32: 8,
-    40: 9,
-    44: 1,
-    48: 1,
-    49: 1,
-    50: 1,
-    51: 1,
-    52: 0,
-    60: 9,
-    70: 1,
-    71: 1,
-    72: 1,
-    80: 1,
-    81: 1,
-    99: 0,
-    252: 1,
-    253: 7,
-    254: 6,
-    255: 8,
-    256: 5,
-    257: 5,
-    258: 4,
-    259: 5,
-}
-
 
 class SemanticKITTI(torch.utils.data.Dataset):
-    def __init__(self, root, split="train"):
+    def __init__(self, root, split="train", kitty_config):
         self.files = []
+        self.config = kitty_config
         root = Path(root)
-        sequences = TRAIN if split == "train" else VAL
+        if split == "train":
+            sequences = self.config['split']['train'] 
+        else:
+            sequences = self.config['split']['valid']
 
         self.files = []
         for seq in sequences:
-            seq_dir = root / "sequences" / seq
+            seq_dir = root / "sequences" / f"{seq:02}"
             if not seq_dir.is_dir():
                 continue
 
@@ -69,7 +33,7 @@ class SemanticKITTI(torch.utils.data.Dataset):
     def _read_scan(self, bin_path, lbl_path):
         pts = np.fromfile(bin_path, dtype=np.float32).reshape(-1, 4)
         lbls = np.fromfile(lbl_path, dtype=np.uint32) & 0xFFFF  # strip instance id
-        lbls = np.array([learning_map[l] for l in lbls])
+        lbls = np.array([self.config['learning_map'][l] for l in lbls])
         return pts, lbls
 
     def __getitem__(self, idx):

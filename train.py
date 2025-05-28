@@ -3,6 +3,7 @@ import pathlib
 
 import torch
 import wandb
+import yaml
 
 from dataloader import SemanticKITTI, collate
 from model import PointNetSeg, loss_fn
@@ -28,8 +29,12 @@ if __name__ == "__main__":
     parser.add_argument("--lr", type=float, default=1e-3, help="learning rate")
     parser.add_argument("--weight_dec", type=float, default=1e-4, help="weight decay")
     parser.add_argument("--epochs", type=int, default=30, help="number of epochs")
+    parser.add_argument("--sem-kitty-conf", default="semantic-kitti-api/config/semantic-kitti.yaml")
 
     args = parser.parse_args()
+
+    with open(args.sem_kitty_conf, "r") as f:
+        kitty_conf = yaml.load(f, yaml.Loader)
 
     cfg = dict(
         model="PointNetSeg",
@@ -46,8 +51,8 @@ if __name__ == "__main__":
     ckpt_dir.mkdir(exist_ok=True)
     best_acc = 0.0
 
-    ds_train = SemanticKITTI(args.dataset, "train")
-    ds_val = SemanticKITTI(args.dataset, "val")
+    ds_train = SemanticKITTI(args.dataset, "train", kitty_conf)
+    ds_val = SemanticKITTI(args.dataset, "val", kitty_conf)
     dl_train = torch.utils.data.DataLoader(
         ds_train,
         batch_size=cfg["batch_size"],
@@ -65,7 +70,9 @@ if __name__ == "__main__":
     )
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    net = PointNetSeg().to(device)
+    
+    num_classes = len(set(kitty_conf['learning_map'].values()))
+    net = PointNetSeg(num_classes).to(device)
     wandb.watch(net, log="gradients", log_freq=100)
 
     opt = torch.optim.AdamW(
