@@ -117,15 +117,15 @@ if __name__ == "__main__":
                 pred = pred[mask]
                 lbl = lbl[mask]
 
-				all_preds.append(pred.cpu())
-				all_labels.append(lbl.cpu())
+                all_preds.append(pred.cpu())
+                all_labels.append(lbl.cpu())
 
                 idx = lbl * num_classes + pred
                 conf_mat += torch.bincount(
                     idx, minlength=num_classes * num_classes
                 ).reshape(num_classes, num_classes)
 
-		all_preds = torch.cat(all_preds).numpy()
+        all_preds = torch.cat(all_preds).numpy()
         all_labels = torch.cat(all_labels).numpy()
 
         TP = conf_mat.diag().float()
@@ -158,25 +158,25 @@ if __name__ == "__main__":
             ckpt_name,
         )
 
-		wandb.log(
+        wandb.log(
             {
                 "val/acc": mAcc,
                 "val/precision": mPrecision,
                 "val/recall": mRecall,
                 "val/iou": mIoU,
                 "val/f1": mF1,
-				"val/conf_mat": wanb.plot.confusion_matrix(
-					y_true=all_labels,
-					preds=all_preds,
-					class_names=class_names,
-				)
+                "val/conf_mat": wanb.plot.confusion_matrix(
+                    y_true=all_labels,
+                    preds=all_preds,
+                    class_names=class_names,
+                )
             }
         )
 
         artifact = wandb.Artifact(
             name=f"pointnet_light_epoch{epoch:03d}",
             type="model",
-			metadata=dict(
+            metadata=dict(
                 mAcc=mAcc,
                 precision=mPrecision,
                 recall=mRecall,
@@ -191,7 +191,7 @@ if __name__ == "__main__":
             best_acc = mAcc
             wandb_run.link_artifact(artifact, aliases=["best"], target_path="model")
 
-		print(
+        print(
             f"epoch {epoch:02d} | mAcc {mAcc:.3%} | mIoU {mIoU:.3%} | "
             f"mF1 {mF1:.3%} | mPrec {mPrecision:.3%} | mRec {mRecall:.3%}"
         )
