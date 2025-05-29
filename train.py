@@ -29,7 +29,9 @@ if __name__ == "__main__":
     parser.add_argument("--lr", type=float, default=1e-3, help="learning rate")
     parser.add_argument("--weight_dec", type=float, default=1e-4, help="weight decay")
     parser.add_argument("--epochs", type=int, default=30, help="number of epochs")
-    parser.add_argument("--sem-kitty-conf", default="semantic-kitti-api/config/semantic-kitti.yaml")
+    parser.add_argument(
+        "--sem-kitty-conf", default="semantic-kitti-api/config/semantic-kitti.yaml"
+    )
 
     args = parser.parse_args()
 
@@ -70,10 +72,12 @@ if __name__ == "__main__":
     )
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    
-    num_classes = len(set(kitty_conf['learning_map'].values()))
-    class_names = [kitty_conf['labels'][kitty_conf['learning_map_inv'][l]] 
-	               for l in range(num_classes)]
+
+    num_classes = len(set(kitty_conf["learning_map"].values()))
+    class_names = [
+        kitty_conf["labels"][kitty_conf["learning_map_inv"][l]]
+        for l in range(num_classes)
+    ]
     net = PointNetSeg(num_classes).to(device)
     wandb.watch(net, log="gradients", log_freq=100)
 
@@ -107,7 +111,9 @@ if __name__ == "__main__":
         # quick val IoU
         net.eval()
         correct = total = 0
-        conf_mat = torch.zeros((num_classes, num_classes), dtype=torch.long, device=device)
+        conf_mat = torch.zeros(
+            (num_classes, num_classes), dtype=torch.long, device=device
+        )
         all_preds, all_labels = [], []
         with torch.no_grad():
             for pts, lbl in dl_val:
@@ -133,19 +139,28 @@ if __name__ == "__main__":
         TP = conf_mat.diag().float()
         FP = conf_mat.sum(0).float() - TP
         FN = conf_mat.sum(1).float() - TP
-        
+
         precision = TP / (TP + FP + 1e-6)
         recall = TP / (TP + FN + 1e-6)
         f1 = 2 * precision * recall / (precision + recall + 1e-6)
         iou = TP / (TP + FP + FN + 1e-6)
 
-		# Macro averages
+        # Macro averages
         mPrecision = precision.mean().item()
         mRecall = recall.mean().item()
         mF1 = f1.mean().item()
         mIoU = iou.mean().item()
         mAcc = TP.sum().item() / conf_mat.sum().item()
-        
+
+        # micro averages
+        micro_precision = TP.sum() / (TP.sum() + FP.sum() + 1e-6)
+        micro_recall = TP.sum() / (TP.sum() + FN.sum() + 1e-6)
+        micro_f1 = (
+            2 * micro_precision * micro_recall / (micro_precision + micro_recall + 1e-6)
+        )
+        micro_iou = TP.sum() / (TP.sum() + FP.sum() + FN.sum() + 1e-6)
+        micro_acc = TP.sum() / conf_mat.sum()
+
         ckpt_name = ckpt_dir / f"epoch{epoch:03d}_acc{mAcc:.3f}.pth"
         torch.save(
             {
@@ -157,6 +172,11 @@ if __name__ == "__main__":
                 "mRecall": mRecall,
                 "mIoU": mIoU,
                 "mF1": mF1,
+                "micro_precision": micro_precision.item(),
+                "micro_recall": micro_recall.item(),
+                "micro_f1": micro_f1.item(),
+                "micro_iou": micro_iou.item(),
+                "micro_acc": micro_acc.item(),
             },
             ckpt_name,
         )
@@ -172,7 +192,7 @@ if __name__ == "__main__":
                     y_true=all_labels,
                     preds=all_preds,
                     class_names=class_names,
-                )
+                ),
             }
         )
 
