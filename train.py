@@ -199,7 +199,10 @@ if __name__ == "__main__":
         table_columns = ["metric"] + list(class_names[1:])
         pc_table = wandb.Table(columns=table_columns)
         for metric_name, arr in metrics_dict.items():
-            pc_table.add_data(metric_name, *[float(x) for x in arr])
+            vals = [float(x) for x in arr]
+            if metric_name != "support":
+                vals = [round(x * 100, 2) for x in vals]
+            pc_table.add_data(metric_name, *vals)
 
         ckpt_name = ckpt_dir / f"epoch{epoch:03d}_acc{mAcc:.3f}.pth"
         torch.save(
