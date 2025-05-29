@@ -136,9 +136,12 @@ if __name__ == "__main__":
         all_preds = torch.cat(all_preds).numpy()
         all_labels = torch.cat(all_labels).numpy()
 
-        TP = conf_mat.diag().float()
-        FP = conf_mat.sum(0).float() - TP
-        FN = conf_mat.sum(1).float() - TP
+        conf_rows = conf_mat[1:, :]  # ignore class 0 (unlabeled)
+        TP = conf_mat[1:, 1:].diag().float()
+        col_sums = conf_rows[:, 1:].sum(0).float()
+        FP = col_sums - TP
+        row_sums = conf_rows.sum(1).float()
+        FN = row_sums - TP
 
         precision = TP / (TP + FP + 1e-6)
         recall = TP / (TP + FN + 1e-6)
