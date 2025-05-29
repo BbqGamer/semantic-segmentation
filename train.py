@@ -160,6 +160,11 @@ if __name__ == "__main__":
         )
         micro_iou = TP.sum() / (TP.sum() + FP.sum() + FN.sum() + 1e-6)
         micro_acc = TP.sum() / conf_mat.sum()
+        micro_acc = micro_acc.item()
+        micro_recall = micro_recall.item()
+        micro_precision = micro_precision.item()
+        micro_f1 = micro_f1.item()
+        micro_iou = micro_iou.item()
 
         ckpt_name = ckpt_dir / f"epoch{epoch:03d}_acc{mAcc:.3f}.pth"
         torch.save(
@@ -172,22 +177,27 @@ if __name__ == "__main__":
                 "mRecall": mRecall,
                 "mIoU": mIoU,
                 "mF1": mF1,
-                "micro_precision": micro_precision.item(),
-                "micro_recall": micro_recall.item(),
-                "micro_f1": micro_f1.item(),
-                "micro_iou": micro_iou.item(),
-                "micro_acc": micro_acc.item(),
+                "micro_precision": micro_precision,
+                "micro_recall": micro_recall,
+                "micro_f1": micro_f1,
+                "micro_iou": micro_iou,
+                "micro_acc": micro_acc,
             },
             ckpt_name,
         )
 
         wandb.log(
             {
-                "val/acc": mAcc,
-                "val/precision": mPrecision,
-                "val/recall": mRecall,
-                "val/iou": mIoU,
-                "val/f1": mF1,
+                "val/micro_acc": mAcc,
+                "val/micro_precision": mPrecision,
+                "val/micro_recall": mRecall,
+                "val/micr_iou": mIoU,
+                "val/micro_f1": mF1,
+                "val/macro_acc": micro_acc,
+                "val/macro_precision": micro_precision,
+                "val/macro_recall": micro_recall,
+                "val/macro_iou": micro_iou,
+                "val/macro_f1": micro_f1,
                 "val/conf_mat": wandb.plot.confusion_matrix(
                     y_true=all_labels,
                     preds=all_preds,
@@ -217,6 +227,9 @@ if __name__ == "__main__":
         print(
             f"epoch {epoch:02d} | mAcc {mAcc:.3%} | mIoU {mIoU:.3%} | "
             f"mF1 {mF1:.3%} | mPrec {mPrecision:.3%} | mRec {mRecall:.3%}"
+            f" | micro_acc {micro_acc:.3%} | micro_iou {micro_iou:.3%} | "
+            f"micro_f1 {micro_f1:.3%} | micro_precision {micro_precision:.3%} | "
+            f"micro_recall {micro_recall:.3%}"
         )
         scheduler.step()
 
