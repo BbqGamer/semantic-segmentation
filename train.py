@@ -133,6 +133,7 @@ if __name__ == "__main__":
                 t0 = time.perf_counter()
                 pred = net(pts).argmax(-1)
                 torch.cuda.synchronize() if device.type == "cuda" else None
+                infer_time += time.perf_counter() - t0
                 num_pc = pts.shape[0]
 
                 # ignore invalid labels
