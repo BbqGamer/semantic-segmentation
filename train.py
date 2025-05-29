@@ -129,10 +129,10 @@ if __name__ == "__main__":
         with torch.no_grad():
             for pts, lbl in dl_val:
                 pts, lbl = pts.to(device), lbl.to(device)
-                torch.cuda.synchronize() if device.type = "cuda" else None
+                torch.cuda.synchronize() if device.type == "cuda" else None
                 t0 = time.perf_counter()
                 pred = net(pts).argmax(-1)
-                torch.cuda.synchronize() if device.type = "cuda" else None
+                torch.cuda.synchronize() if device.type == "cuda" else None
                 num_pc = pts.shape[0]
 
                 # ignore invalid labels
