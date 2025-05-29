@@ -52,6 +52,7 @@ if __name__ == "__main__":
     ckpt_dir = pathlib.Path(args.checkpoints)
     ckpt_dir.mkdir(exist_ok=True)
     best_acc = 0.0
+    global_step = 0
 
     ds_train = SemanticKITTI(args.dataset, kitty_conf, "train")
     ds_val = SemanticKITTI(args.dataset, kitty_conf, "valid")
@@ -90,6 +91,7 @@ if __name__ == "__main__":
         net.train()
         running_loss = 0
         for step, (pts, lbl) in enumerate(dl_train):
+            global_step += 1
             pts, lbl = pts.to(device), lbl.to(device)
             logits = net(pts)
             loss = loss_fn(logits, lbl)
@@ -169,6 +171,18 @@ if __name__ == "__main__":
         micro_f1 = micro_f1.item()
         micro_iou = micro_iou.item()
 
+        metrics_dict = {
+            "iou": iou.cpu().numpy(),
+            "precision": precision.cpu().numpy(),
+            "recall": recall.cpu().numpy(),
+            "f1": f1.cpu().numpy(),
+            "support": row_sums.cpu().numpy(),
+        }
+        table_columns = ["metric"] + list(class_names[1:])
+        pc_table = wandb.Table(columns=table_columns)
+        for metric_name, arr in metric_dict.items():
+            pc_table.add_data(metric_name, *[float(x) for x in arr])
+
         ckpt_name = ckpt_dir / f"epoch{epoch:03d}_acc{mAcc:.3f}.pth"
         torch.save(
             {
@@ -201,13 +215,13 @@ if __name__ == "__main__":
                 "val/macro_recall": micro_recall,
                 "val/macro_iou": micro_iou,
                 "val/macro_f1": micro_f1,
+                "val/per_class_metrics": pc_table,
                 "val/conf_mat": wandb.plot.confusion_matrix(
                     y_true=all_labels,
                     preds=all_preds,
                     class_names=class_names,
                 ),
-            }
-        )
+            }, step=global_step)
 
         artifact = wandb.Artifact(
             name=f"pointnet_light_epoch{epoch:03d}",
