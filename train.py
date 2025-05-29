@@ -180,7 +180,7 @@ if __name__ == "__main__":
         }
         table_columns = ["metric"] + list(class_names[1:])
         pc_table = wandb.Table(columns=table_columns)
-        for metric_name, arr in metric_dict.items():
+        for metric_name, arr in metrics_dict.items():
             pc_table.add_data(metric_name, *[float(x) for x in arr])
 
         ckpt_name = ckpt_dir / f"epoch{epoch:03d}_acc{mAcc:.3f}.pth"
