@@ -166,7 +166,7 @@ if __name__ == "__main__":
                 "val/recall": mRecall,
                 "val/iou": mIoU,
                 "val/f1": mF1,
-                "val/conf_mat": wanb.plot.confusion_matrix(
+                "val/conf_mat": wandb.plot.confusion_matrix(
                     y_true=all_labels,
                     preds=all_preds,
                     class_names=class_names,
