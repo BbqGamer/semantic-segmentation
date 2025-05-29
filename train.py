@@ -4,7 +4,6 @@ import pathlib
 import torch
 import wandb
 import yaml
-import numpy as np
 
 from dataloader import SemanticKITTI, collate
 from model import PointNetSeg, loss_fn
@@ -106,7 +105,7 @@ if __name__ == "__main__":
         # quick val IoU
         net.eval()
         correct = total = 0
-        conf_mat = np.zeros((num_classes, num_classes), dtype=torch.long, device=device)
+        conf_mat = torch.zeros((num_classes, num_classes), dtype=torch.long, device=device)
         all_preds, all_labels = [], []
         with torch.no_grad():
             for pts, lbl in dl_val:
@@ -138,6 +137,7 @@ if __name__ == "__main__":
         f1 = 2 * precision * recall / (precision + recall + 1e-6)
         iou = TP / (TP + FP + FN + 1e-6)
 
+		# Macro averages
         mPrecision = precision.mean().item()
         mRecall = recall.mean().item()
         mF1 = f1.mean().item()
