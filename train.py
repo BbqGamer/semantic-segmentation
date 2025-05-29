@@ -4,6 +4,7 @@ import pathlib
 import torch
 import wandb
 import yaml
+import time
 
 from dataloader import SemanticKITTI, collate
 from model import PointNetSeg, loss_fn
@@ -82,12 +83,17 @@ if __name__ == "__main__":
     net = PointNetSeg(num_classes).to(device)
     wandb.watch(net, log="gradients", log_freq=100)
 
+    num_params = sum(p.numel() for p in net.parameters()) / 1e6  # millions
+    wandb.config.update({"params_million": num_params})
+
     opt = torch.optim.AdamW(
         net.parameters(), lr=cfg["lr"], weight_decay=cfg["weight_dec"]
     )
     scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(opt, T_max=cfg["epochs"])
 
     for epoch in range(cfg["epochs"]):
+        epoch_start_wall = time.time()
+
         net.train()
         running_loss = 0
         for step, (pts, lbl) in enumerate(dl_train):
@@ -117,10 +123,17 @@ if __name__ == "__main__":
             (num_classes, num_classes), dtype=torch.long, device=device
         )
         all_preds, all_labels = [], []
+        num_pc = 0
+        infer_time = 0.0
+
         with torch.no_grad():
             for pts, lbl in dl_val:
                 pts, lbl = pts.to(device), lbl.to(device)
+                torch.cuda.synchronize() if device.type = "cuda" else None
+                t0 = time.perf_counter()
                 pred = net(pts).argmax(-1)
+                torch.cuda.synchronize() if device.type = "cuda" else None
+                num_pc = pts.shape[0]
 
                 # ignore invalid labels
                 mask = lbl != -1
@@ -134,6 +147,10 @@ if __name__ == "__main__":
                 conf_mat += torch.bincount(
                     idx, minlength=num_classes * num_classes
                 ).reshape(num_classes, num_classes)
+
+        elapsed_wall = time.time() - epoch_start_wall
+        gpu_hours = elapsed_wall * torch.cuda.device_count() / 3600.0
+        secs_per_pc = infer_time / max(1, num_pc)
 
         all_preds = torch.cat(all_preds).numpy()
         all_labels = torch.cat(all_labels).numpy()
@@ -221,6 +238,8 @@ if __name__ == "__main__":
                     preds=all_preds,
                     class_names=class_names,
                 ),
+                "perf/seconds_per_pc": secs_per_pc,
+                "perf/gpu_hours_epoch": gpu_hours,
             }, step=global_step)
 
         artifact = wandb.Artifact(
