@@ -4,6 +4,7 @@ import pathlib
 import torch
 import wandb
 import yaml
+import numpy as np
 
 from dataloader import SemanticKITTI, collate
 from model import PointNetSeg, loss_fn
