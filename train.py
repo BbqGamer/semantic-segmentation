@@ -226,16 +226,16 @@ if __name__ == "__main__":
 
         wandb.log(
             {
-                "val/micro_acc": mAcc,
-                "val/micro_precision": mPrecision,
-                "val/micro_recall": mRecall,
-                "val/micr_iou": mIoU,
-                "val/micro_f1": mF1,
-                "val/macro_acc": micro_acc,
-                "val/macro_precision": micro_precision,
-                "val/macro_recall": micro_recall,
-                "val/macro_iou": micro_iou,
-                "val/macro_f1": micro_f1,
+                "val/mAcc": mAcc,
+                "val/mPrecision": mPrecision,
+                "val/mRecall": mRecall,
+                "val/mIou": mIoU,
+                "val/mF1": mF1,
+                "val/micro_acc": micro_acc,
+                "val/micro_precision": micro_precision,
+                "val/micro_recall": micro_recall,
+                "val/micro_iou": micro_iou,
+                "val/micro_f1": micro_f1,
                 "val/per_class_metrics": pc_table,
                 "val/conf_mat": wandb.plot.confusion_matrix(
                     y_true=all_labels,
