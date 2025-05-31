@@ -31,7 +31,7 @@ if __name__ == "__main__":
     parser.add_argument("--weight_dec", type=float, default=1e-4, help="weight decay")
     parser.add_argument("--epochs", type=int, default=30, help="number of epochs")
     parser.add_argument(
-        "--sem-kitty-conf", default="semantic-kitti-api/config/semantic-kitti.yaml"
+        "--sem-kitty-conf", default="semantic-kitti.yaml"
     )
 
     args = parser.parse_args()
