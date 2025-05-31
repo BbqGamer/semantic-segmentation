@@ -75,7 +75,7 @@ if __name__ == "__main__":
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-    num_classes = len(set(kitty_conf["learning_map"].values()))
+    num_classes = max(kitty_conf["learning_map"].values()) + 1
     class_names = [
         kitty_conf["labels"][kitty_conf["learning_map_inv"][l]]
         for l in range(num_classes)
