@@ -82,9 +82,9 @@ def fitness_mIoU_torch_batched(w):
 
     # Initialize dictionaries to accumulate True Positives, False Positives, and False Negatives
     # for each class across all batches. We use a dict for sparse classes or for easy iteration.
-    accumulated_tp = {cls_id: 0 for cls_id in range(n_weights)}
-    accumulated_fp = {cls_id: 0 for cls_id in range(n_weights)}
-    accumulated_fn = {cls_id: 0 for cls_id in range(n_weights)}
+    accumulated_tp = {cls_id: 0 for cls_id in range(-1,n_weights)}
+    accumulated_fp = {cls_id: 0 for cls_id in range(-1,n_weights)}
+    accumulated_fn = {cls_id: 0 for cls_id in range(-1,n_weights)}
 
     # Iterate over the data in batches
     for i in range(0, L.shape[0], BATCH_SIZE):
@@ -106,7 +106,7 @@ def fitness_mIoU_torch_batched(w):
         # And accumulate them
         current_batch_unique_classes = torch.unique(batch_L_torch).tolist()
 
-        for cls in range(n_weights):  # Iterate through all possible classes
+        for cls in range(-1,n_weights):  # Iterate through all possible classes
             # Convert class ID to tensor on device for comparison
             cls_torch = torch.tensor(cls, device=device, dtype=torch.long)
 
