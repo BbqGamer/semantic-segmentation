@@ -1,2 +1,6 @@
 dataset
 *.zip
+artifacts/
+no_proba/
+predictions/
+semantic-kitty-api/
